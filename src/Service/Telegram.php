@@ -10,7 +10,7 @@ class Telegram implements TelegramInterface
 
     public function __construct(TelegramConfiguration $telegramConfiguration, string $project_dir)
     {
-        $this->madelineProto = new API($project_dir.'/var/sessions/session.madeline', [
+        $this->madelineProto = new API($project_dir.'/var/session.madeline', [
             'app_info' => [
                 'api_id' => $telegramConfiguration->getApiId(),
                 'api_hash' => $telegramConfiguration->getApiHash(),
