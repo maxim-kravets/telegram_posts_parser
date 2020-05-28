@@ -247,7 +247,7 @@ class ParsePostsCommand extends Command
                         $postText = $this->postTextRepository->getPostText($text);
 
                         if (empty($postText)) {
-                            $postTextDto = new PostTextDto(htmlspecialchars($text));
+                            $postTextDto = new PostTextDto($text);
                             $postText = PostText::create($postTextDto);
                             $this->postTextRepository->save($postText);
                         }
