@@ -58,18 +58,18 @@ class ParsePostsCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $this->telegramService->async(true);
 
-        $this->telegramService->loop(function () {
+        $this->telegramService->loop(function () use ($io) {
             if (! yield $this->telegramService->getSelf()) {
-                $phone = trim((string) readline(PHP_EOL.'Enter phone: '));
+                $phone = trim((string) $io->ask('Enter phone: '));
                 yield $this->telegramService->phoneLogin($phone);
 
-                $code = trim((string) readline(PHP_EOL.'Enter code: '));
+                $code = trim((string) $io->ask('Enter code: '));
                 yield $this->telegramService->completePhoneLogin($code);
             }
         });
 
         do {
-            $chat = trim((string) readline(PHP_EOL.'Enter chat: '));
+            $chat = trim((string) $io->ask('Enter chat: '));
 
             $chat_info = [];
             $is_chat_exists = true;
@@ -88,7 +88,7 @@ class ParsePostsCommand extends Command
         } while (empty($chat) || !$is_chat_exists);
 
         do {
-            $key = trim((string) readline(PHP_EOL.'Enter key: '));
+            $key = trim((string) $io->ask('Enter key: '));
 
             if (empty($key)) {
                 $io->error('Key can\'t be empty!');
@@ -96,7 +96,7 @@ class ParsePostsCommand extends Command
         } while (empty($key));
 
         do {
-            $days = readline(PHP_EOL.'Enter depth(days): ');
+            $days = $io->ask('Enter depth(days): ');
 
             $is_int = preg_match('/^[0-9]+$/', $days);
 
@@ -275,11 +275,12 @@ class ParsePostsCommand extends Command
                 sleep(1);
             } while (!empty($messages));
 
+            $this->telegramService->stop();
+
             $progressBar->finish();
         });
 
-        $this->telegramService->stop();
-
+        $io->writeln(PHP_EOL);
         $io->success(
             'Posts successfully parsed!'.PHP_EOL.
             'Total messages count: '.$total_messages_count.PHP_EOL.
