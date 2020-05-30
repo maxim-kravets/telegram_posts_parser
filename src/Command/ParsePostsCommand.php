@@ -118,9 +118,10 @@ class ParsePostsCommand extends Command
         }
 
         $unique_messages = [];
+        $unique_usernames = [];
         $total_messages_count = 0;
         $timestamp = $date->getTimestamp();
-        $this->telegramService->loop(function () use ($chat, $timestamp, $io, $key, $output, $chat_info, &$unique_messages, &$total_messages_count) {
+        $this->telegramService->loop(function () use ($chat, $timestamp, $io, $key, $output, $chat_info, &$unique_messages, &$total_messages_count, &$unique_usernames) {
             try {
                 $message = yield $this->telegramService->messages->getHistory([
                     'peer' => $chat,
@@ -227,12 +228,21 @@ class ParsePostsCommand extends Command
                         preg_match_all('/@[a-zA-z0-9_]*/', $text, $matches);
 
                         $usernames = $matches[0] ?? [];
+
+                        if (!empty($usernames)) {
+                            foreach ($usernames as $username) {
+                                if (!in_array($username, $unique_usernames)) {
+                                    $unique_usernames[] = $username;
+                                }
+                            }
+                        }
+
                         $user_telegram_id = $message['from_id'] ?? null;
 
                         $user = yield $this->telegramService->getInfo($user_telegram_id);
 
                         $sender_username = null;
-                        if ( ! empty($user) && isset($user['username'])) {
+                        if (!empty($user) && isset($user['username'])) {
                             $sender_username = $user['username'];
                         }
 
@@ -292,7 +302,8 @@ class ParsePostsCommand extends Command
         $io->success(
             'Posts successfully parsed!'.PHP_EOL.
             'Total messages count: '.$total_messages_count.PHP_EOL.
-            'Unique messages count: '.count($unique_messages)
+            'Unique messages count: '.count($unique_messages).PHP_EOL.
+            'Unique usernames count: '.count($unique_messages)
         );
 
         return 0;
