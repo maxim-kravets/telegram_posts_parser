@@ -13,7 +13,8 @@ class Post
     private $telegram_id;
     private $date;
     private $telegram_chat_id;
-    private $post_text_id;
+    private $post_text;
+    private $usernames;
 
     public function __construct(
         User $user,
@@ -21,7 +22,8 @@ class Post
         int $telegram_id,
         \DateTime $date,
         int $telegarm_chat_id,
-        PostText $post_text
+        PostText $post_text,
+        array $usernames
     ) {
         $this->user = $user;
         $this->keyword = $keyword;
@@ -29,6 +31,7 @@ class Post
         $this->date = $date;
         $this->telegram_chat_id = $telegarm_chat_id;
         $this->post_text = $post_text;
+        $this->usernames = $usernames;
     }
 
     public function getUser(): User
@@ -59,5 +62,10 @@ class Post
     public function getPostText(): PostText
     {
         return $this->post_text;
+    }
+
+    public function getUsernames(): array
+    {
+        return $this->usernames;
     }
 }

@@ -224,14 +224,22 @@ class ParsePostsCommand extends Command
                         }
 
                         // get username
-                        preg_match('/@[a-zA-z0-9_]*/', $text, $matches);
-                        $username = $matches[0] ?? null;
+                        preg_match_all('/@[a-zA-z0-9_]*/', $text, $matches);
+
+                        $usernames = $matches[0] ?? [];
                         $user_telegram_id = $message['from_id'] ?? null;
+
+                        $user = yield $this->telegramService->getInfo($user_telegram_id);
+
+                        $sender_username = null;
+                        if ( ! empty($user) && isset($user['username'])) {
+                            $sender_username = $user['username'];
+                        }
 
                         $user = $this->userRepository->getUserByTelegramId($user_telegram_id);
 
                         if (empty($user)) {
-                            $userDto = new UserDto($username, $user_telegram_id);
+                            $userDto = new UserDto($sender_username, $user_telegram_id);
                             $user = User::create($userDto);
                             $this->userRepository->save($user);
                         }
@@ -261,7 +269,7 @@ class ParsePostsCommand extends Command
                         $post = $this->postRepository->getPostByTelegramId($message['id']);
 
                         if (empty($post)) {
-                            $postDto = new PostDto($user, $keyword, $message['id'], $date, $chat_info['Chat']['id'], $postText);
+                            $postDto = new PostDto($user, $keyword, $message['id'], $date, $chat_info['Chat']['id'], $postText, $usernames);
                             $post = Post::create($postDto);
                             $this->postRepository->save($post);
                         }
