@@ -58,15 +58,15 @@ class ParsePostsCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $this->telegramService->async(true);
 
-        if (!$this->telegramService->getSelf()) {
-            $this->telegramService->loop(function () {
+        $this->telegramService->loop(function () {
+            if (! yield $this->telegramService->getSelf()) {
                 $phone = trim((string) readline(PHP_EOL.'Enter phone: '));
                 yield $this->telegramService->phoneLogin($phone);
 
                 $code = trim((string) readline(PHP_EOL.'Enter code: '));
                 yield $this->telegramService->completePhoneLogin($code);
-            });
-        }
+            }
+        });
 
         do {
             $chat = trim((string) readline(PHP_EOL.'Enter chat: '));
