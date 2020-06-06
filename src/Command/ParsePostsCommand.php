@@ -231,7 +231,7 @@ class ParsePostsCommand extends Command
 
                         if (!empty($usernames)) {
                             foreach ($usernames as $username) {
-                                if (!in_array($username, $unique_usernames)) {
+                                if (!in_array($username, $unique_usernames) && !filter_var($username, FILTER_VALIDATE_EMAIL)) {
                                     $unique_usernames[] = $username;
                                 }
                             }
