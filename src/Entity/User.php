@@ -35,6 +35,11 @@ class User
      */
     private $posts;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $firstname;
+
     public function __construct()
     {
         $this->posts = new ArrayCollection();
@@ -100,11 +105,25 @@ class User
         return $this;
     }
 
+    public function getFirstname(): ?string
+    {
+        return $this->firstname;
+    }
+
+    public function setFirstname(?string $firstname): self
+    {
+        $this->firstname = $firstname;
+
+        return $this;
+    }
+
+
     public static function create(UserDto $userDto): User
     {
         $user = new User();
         $user->setUsername($userDto->getUsername());
         $user->setTelegramId($userDto->getTelegramId());
+        $user->setFirstname($userDto->getFirstname());
 
         return $user;
     }

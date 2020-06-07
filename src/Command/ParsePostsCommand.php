@@ -246,12 +246,13 @@ class ParsePostsCommand extends Command
                             $sender_username = $user['username'];
                         }
 
-                        $user = $this->userRepository->getUserByTelegramId($user_telegram_id);
+                        $user_db = $this->userRepository->getUserByTelegramId($user_telegram_id);
 
-                        if (empty($user)) {
-                            $userDto = new UserDto($sender_username, $user_telegram_id);
-                            $user = User::create($userDto);
-                            $this->userRepository->save($user);
+                        if (empty($user_db)) {
+                            $user_first_name = $user['User']['first_name'] ?? null;
+                            $userDto = new UserDto($sender_username, $user_telegram_id, $user_first_name);
+                            $user_db = User::create($userDto);
+                            $this->userRepository->save($user_db);
                         }
 
                         $keyword = $this->keywordRepository->getByName($key);
@@ -279,7 +280,7 @@ class ParsePostsCommand extends Command
                         $post = $this->postRepository->getPostByTelegramId($message['id']);
 
                         if (empty($post)) {
-                            $postDto = new PostDto($user, $keyword, $message['id'], $date, $chat_info['Chat']['id'], $postText, $usernames);
+                            $postDto = new PostDto($user_db, $keyword, $message['id'], $date, $chat_info['Chat']['id'], $postText, $usernames);
                             $post = Post::create($postDto);
                             $this->postRepository->save($post);
                         }

@@ -21,7 +21,7 @@ class Post
         Keyword $keyword,
         int $telegram_id,
         \DateTime $date,
-        int $telegarm_chat_id,
+        int $telegram_chat_id,
         PostText $post_text,
         array $usernames
     ) {
@@ -29,7 +29,7 @@ class Post
         $this->keyword = $keyword;
         $this->telegram_id = $telegram_id;
         $this->date = $date;
-        $this->telegram_chat_id = $telegarm_chat_id;
+        $this->telegram_chat_id = $telegram_chat_id;
         $this->post_text = $post_text;
         $this->usernames = $usernames;
     }
