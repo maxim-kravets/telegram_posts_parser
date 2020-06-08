@@ -242,8 +242,8 @@ class ParsePostsCommand extends Command
                         $user = yield $this->telegramService->getInfo($user_telegram_id);
 
                         $sender_username = null;
-                        if (!empty($user) && isset($user['username'])) {
-                            $sender_username = $user['username'];
+                        if (!empty($user) && isset($user['User']['username'])) {
+                            $sender_username = $user['User']['username'];
                         }
 
                         $user_db = $this->userRepository->getUserByTelegramId($user_telegram_id);
