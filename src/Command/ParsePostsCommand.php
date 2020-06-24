@@ -291,7 +291,7 @@ class ParsePostsCommand extends Command
                     $offset_id = $messages[array_key_last($messages)]['id'];
                 }
 
-                sleep(1);
+                sleep(3);
             } while (!empty($messages));
 
             $this->telegramService->stop();
