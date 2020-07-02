@@ -8,13 +8,15 @@ class User
     private $telegram_id;
     private $firstname;
     private $lastname;
+    private $deleted;
 
-    public function __construct($username, $telegram_id, ?string $firstname, ?string $lastname)
+    public function __construct($username, $telegram_id, ?string $firstname, ?string $lastname, bool $deleted)
     {
         $this->username = $username;
         $this->telegram_id = $telegram_id;
         $this->firstname = $firstname;
         $this->lastname = $lastname;
+        $this->deleted = $deleted;
     }
 
     public function getUsername()
@@ -35,5 +37,10 @@ class User
     public function getLastname(): ?string
     {
         return $this->lastname;
+    }
+
+    public function isDeleted(): bool
+    {
+        return $this->deleted;
     }
 }

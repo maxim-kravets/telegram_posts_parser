@@ -62,10 +62,15 @@ class MakeReportCommand extends Command
                     $result[$text_id]['post_link'] = $this->generatePostLink($post->getTelegramId(), $post->getChatName());
                 }
             } else {
-                $username = $post->getUser()->getFirstname().' '.$post->getUser()->getLastName().' ';
 
-                if (!empty($post->getUser()->getUsername())) {
-                    $username .= '('.$post->getUser()->getUsername().')';
+                if ($post->getUser()->isDeleted()) {
+                    $username = 'Аккаунт удален';
+                } else {
+                    $username = $post->getUser()->getFirstname() . ' ' . $post->getUser()->getLastName() . ' ';
+
+                    if (!empty($post->getUser()->getUsername())) {
+                        $username .= '(' . $post->getUser()->getUsername() . ')';
+                    }
                 }
 
                 $result[$text_id] = [

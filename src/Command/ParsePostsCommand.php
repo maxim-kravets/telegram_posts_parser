@@ -241,17 +241,15 @@ class ParsePostsCommand extends Command
 
                         $user = yield $this->telegramService->getInfo($user_telegram_id);
 
-                        $sender_username = null;
-                        if (!empty($user) && isset($user['User']['username'])) {
-                            $sender_username = $user['User']['username'];
-                        }
-
                         $user_db = $this->userRepository->getUserByTelegramId($user_telegram_id);
 
                         if (empty($user_db)) {
+                            $deleted = $user['User']['deleted'];
+                            $sender_username = $user['User']['username'] ?? null;
                             $user_first_name = $user['User']['first_name'] ?? null;
                             $user_last_name = $user['User']['last_name'] ?? null;
-                            $userDto = new UserDto($sender_username, $user_telegram_id, $user_first_name, $user_last_name);
+
+                            $userDto = new UserDto($sender_username, $user_telegram_id, $user_first_name, $user_last_name, $deleted);
                             $user_db = User::create($userDto);
                             $this->userRepository->save($user_db);
                         }

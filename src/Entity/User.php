@@ -45,6 +45,11 @@ class User
      */
     private $last_name;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $deleted = false;
+
     public function __construct()
     {
         $this->posts = new ArrayCollection();
@@ -129,6 +134,7 @@ class User
         $user->setTelegramId($userDto->getTelegramId());
         $user->setFirstname($userDto->getFirstname());
         $user->setLastName($userDto->getLastname());
+        $user->setDeleted($userDto->isDeleted());
 
         return $user;
     }
@@ -141,6 +147,18 @@ class User
     public function setLastName(?string $last_name): self
     {
         $this->last_name = $last_name;
+
+        return $this;
+    }
+
+    public function isDeleted(): ?bool
+    {
+        return $this->deleted;
+    }
+
+    public function setDeleted(bool $deleted): self
+    {
+        $this->deleted = $deleted;
 
         return $this;
     }
