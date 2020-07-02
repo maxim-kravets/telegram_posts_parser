@@ -56,6 +56,11 @@ class Post
      */
     private $usernames = [];
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $chat_name;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -119,6 +124,7 @@ class Post
         $post->setTelegramChatId($postDto->getTelegramChatId());
         $post->setText($postDto->getPostText());
         $post->setUsernames($postDto->getUsernames());
+        $post->setChatName($postDto->getChatName());
 
         return $post;
     }
@@ -155,6 +161,18 @@ class Post
     public function setUsernames(array $usernames): self
     {
         $this->usernames = $usernames;
+
+        return $this;
+    }
+
+    public function getChatName(): ?string
+    {
+        return $this->chat_name;
+    }
+
+    public function setChatName(?string $chat_name): self
+    {
+        $this->chat_name = $chat_name;
 
         return $this;
     }

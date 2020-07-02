@@ -40,6 +40,11 @@ class User
      */
     private $firstname;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $last_name;
+
     public function __construct()
     {
         $this->posts = new ArrayCollection();
@@ -117,14 +122,26 @@ class User
         return $this;
     }
 
-
     public static function create(UserDto $userDto): User
     {
         $user = new User();
         $user->setUsername($userDto->getUsername());
         $user->setTelegramId($userDto->getTelegramId());
         $user->setFirstname($userDto->getFirstname());
+        $user->setLastName($userDto->getLastname());
 
         return $user;
+    }
+
+    public function getLastName(): ?string
+    {
+        return $this->last_name;
+    }
+
+    public function setLastName(?string $last_name): self
+    {
+        $this->last_name = $last_name;
+
+        return $this;
     }
 }

@@ -4,10 +4,9 @@ namespace App\Command;
 
 use App\Entity\Keyword;
 use App\Repository\KeywordRepositoryInterface;
+use App\Service\TelegramInterface;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use XLSXWriter;
@@ -48,7 +47,6 @@ class MakeReportCommand extends Command
                     $io->error('There is no such key in the database. Enter another.');
                 }
             }
-
         } while (empty($key) || empty($keyword));
 
         $posts = $keyword->getPosts();
@@ -56,19 +54,26 @@ class MakeReportCommand extends Command
         $result = [];
         foreach ($posts as $post) {
             $text_id = $post->getText()->getId();
+
             if (isset($result[$text_id])) {
                 ++$result[$text_id]['count'];
                 if ($post->getDate() > $result[$text_id]['last_date']) {
                     $result[$text_id]['last_date'] = $post->getDate();
-                    $result[$text_id]['post_link'] = $this->generatePostLink($post->getTelegramId(), $post->getTelegramChatId());
+                    $result[$text_id]['post_link'] = $this->generatePostLink($post->getTelegramId(), $post->getChatName());
                 }
             } else {
+                $username = $post->getUser()->getFirstname().' '.$post->getUser()->getLastName().' ';
+
+                if (!empty($post->getUser()->getUsername())) {
+                    $username .= '('.$post->getUser()->getUsername().')';
+                }
+
                 $result[$text_id] = [
                     'count' => 1,
                     'last_date' => $post->getDate(),
-                    'post_link' => $this->generatePostLink($post->getTelegramId(), $post->getTelegramChatId()),
+                    'post_link' => $this->generatePostLink($post->getTelegramId(), $post->getChatName()),
                     'text' => $post->getText()->getText(),
-                    'username' => $post->getUser()->getUsername() ?? '---'
+                    'username' => $username,
                 ];
             }
         }
@@ -91,8 +96,8 @@ class MakeReportCommand extends Command
         return 0;
     }
 
-    protected function generatePostLink(int $post_id, int $chat_id): string
+    protected function generatePostLink(int $post_id, string $chat_name): string
     {
-        return 'https://t.me/c/'.$chat_id.'/'.$post_id;
+        return 'https://t.me/'.$chat_name.'/'.$post_id;
     }
 }

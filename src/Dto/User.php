@@ -7,12 +7,14 @@ class User
     private $username;
     private $telegram_id;
     private $firstname;
+    private $lastname;
 
-    public function __construct($username, $telegram_id, ?string $firstname)
+    public function __construct($username, $telegram_id, ?string $firstname, ?string $lastname)
     {
         $this->username = $username;
         $this->telegram_id = $telegram_id;
         $this->firstname = $firstname;
+        $this->lastname = $lastname;
     }
 
     public function getUsername()
@@ -28,5 +30,10 @@ class User
     public function getFirstname(): ?string
     {
         return $this->firstname;
+    }
+
+    public function getLastname(): ?string
+    {
+        return $this->lastname;
     }
 }

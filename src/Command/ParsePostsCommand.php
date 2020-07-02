@@ -59,7 +59,7 @@ class ParsePostsCommand extends Command
         $this->telegramService->async(true);
 
         $this->telegramService->loop(function () use ($io) {
-            if (! yield $this->telegramService->getSelf()) {
+            if (!yield $this->telegramService->getSelf()) {
                 $phone = trim((string) $io->ask('Enter phone: '));
                 yield $this->telegramService->phoneLogin($phone);
 
@@ -136,7 +136,7 @@ class ParsePostsCommand extends Command
                 if ('CHANNEL_PRIVATE' === $e->rpc) {
                     try {
                         $this->telegramService->messages->importChatInvite([
-                            'hash' => substr($chat, strrpos($chat, '/') + 1)
+                            'hash' => substr($chat, strrpos($chat, '/') + 1),
                         ]);
 
                         $message = yield $this->telegramService->messages->getHistory([
@@ -250,7 +250,8 @@ class ParsePostsCommand extends Command
 
                         if (empty($user_db)) {
                             $user_first_name = $user['User']['first_name'] ?? null;
-                            $userDto = new UserDto($sender_username, $user_telegram_id, $user_first_name);
+                            $user_last_name = $user['User']['last_name'] ?? null;
+                            $userDto = new UserDto($sender_username, $user_telegram_id, $user_first_name, $user_last_name);
                             $user_db = User::create($userDto);
                             $this->userRepository->save($user_db);
                         }
@@ -280,7 +281,16 @@ class ParsePostsCommand extends Command
                         $post = $this->postRepository->getPostByTelegramId($message['id']);
 
                         if (empty($post)) {
-                            $postDto = new PostDto($user_db, $keyword, $message['id'], $date, $chat_info['Chat']['id'], $postText, $usernames);
+                            $postDto = new PostDto(
+                                $user_db,
+                                $keyword,
+                                $message['id'],
+                                $date,
+                                $chat_info['Chat']['id'],
+                                $postText,
+                                $usernames,
+                                $chat_info['Chat']['username']
+                            );
                             $post = Post::create($postDto);
                             $this->postRepository->save($post);
                         }
