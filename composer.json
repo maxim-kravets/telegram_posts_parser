@@ -7,6 +7,7 @@
         "ext-iconv": "*",
         "ext-readline": "*",
         "danog/madelineproto": "^5.1",
+        "mk-j/php_xlsxwriter": "^0.38.0",
         "symfony/console": "5.0.*",
         "symfony/dotenv": "5.0.*",
         "symfony/flex": "^1.3.1",

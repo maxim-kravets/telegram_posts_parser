@@ -195,6 +195,9 @@
     "league/uri-parser": {
         "version": "1.4.1"
     },
+    "mk-j/php_xlsxwriter": {
+        "version": "0.38"
+    },
     "nikic/php-parser": {
         "version": "v4.4.0"
     },
