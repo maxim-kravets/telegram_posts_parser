@@ -14,7 +14,8 @@ use App\Repository\KeywordRepositoryInterface;
 use App\Repository\PostRepositoryInterface;
 use App\Repository\PostTextRepositoryInterface;
 use App\Repository\UserRepositoryInterface;
-use App\Service\TelegramInterface;
+use App\Service\TelegramConfiguration;
+use danog\MadelineProto\API;
 use danog\MadelineProto\Exception;
 use danog\MadelineProto\RPCErrorException;
 use Symfony\Component\Console\Command\Command;
@@ -28,21 +29,25 @@ class ParsePostsCommand extends Command
 {
     protected static $defaultName = 'app:parse-posts';
 
+    private $project_dir;
     private $telegramService;
+    private $telegramConfiguration;
     private $postRepository;
     private $userRepository;
     private $keywordRepository;
     private $postTextRepository;
 
     public function __construct(
-        TelegramInterface $telegramService,
+        string $project_dir,
+        TelegramConfiguration $telegramConfiguration,
         PostRepositoryInterface $postRepository,
         UserRepositoryInterface $userRepository,
         KeywordRepositoryInterface $keywordRepository,
         PostTextRepositoryInterface $postTextRepository
     ) {
         parent::__construct();
-        $this->telegramService = $telegramService->getAPI();
+        $this->project_dir = $project_dir;
+        $this->telegramConfiguration = $telegramConfiguration;
         $this->postRepository = $postRepository;
         $this->userRepository = $userRepository;
         $this->keywordRepository = $keywordRepository;
@@ -72,17 +77,41 @@ class ParsePostsCommand extends Command
                 null,
                 InputOption::VALUE_OPTIONAL,
                 'The number of recent days during which posts could be published'
-            );
+            )
+            ->addOption(
+                'session',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Name of session file'
+            )
+        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $this->telegramService->async(true);
 
         $chat = $input->getOption('chat');
         $key = $input->getOption('key');
         $days = $input->getOption('depth');
+        $session = $input->getOption('session');
+
+        $path_to_session = $this->project_dir.'/var/session.madeline';
+        if (!empty($session)) {
+            $path_to_session = $this->project_dir.'/var/'.$session;
+        } else {
+            $io->text('Since no session file is specified, a standard '.$path_to_session.' is used...');
+        }
+        $this->telegramService = new API($path_to_session, [
+            'app_info' => [
+                'api_id' => $this->telegramConfiguration->getApiId(),
+                'api_hash' => $this->telegramConfiguration->getApiHash(),
+            ],
+            'logger' => [
+                'logger' => 0,
+            ],
+        ]);
+        $this->telegramService->async(true);
 
         $this->telegramService->loop(function () use ($io) {
             if (!yield $this->telegramService->getSelf()) {
@@ -96,7 +125,7 @@ class ParsePostsCommand extends Command
 
         if (empty($chat)) {
             do {
-                $chat = trim((string)$io->ask('Enter chat: '));
+                $chat = trim((string) $io->ask('Enter chat: '));
 
                 $chat_info = [];
                 $is_chat_exists = true;
@@ -126,7 +155,7 @@ class ParsePostsCommand extends Command
 
         if (empty($key)) {
             do {
-                $key = trim((string)$io->ask('Enter key: '));
+                $key = trim((string) $io->ask('Enter key: '));
 
                 if (empty($key)) {
                     $io->error('Key can\'t be empty!');
