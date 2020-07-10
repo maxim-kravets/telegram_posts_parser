@@ -4,7 +4,6 @@ namespace App\Command;
 
 use App\Entity\Keyword;
 use App\Repository\KeywordRepositoryInterface;
-use App\Service\TelegramInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -62,14 +61,13 @@ class MakeReportCommand extends Command
                     $result[$text_id]['post_link'] = $this->generatePostLink($post->getTelegramId(), $post->getChatName());
                 }
             } else {
-
                 if ($post->getUser()->isDeleted()) {
                     $username = 'Аккаунт удален';
                 } else {
-                    $username = $post->getUser()->getFirstname() . ' ' . $post->getUser()->getLastName() . ' ';
+                    $username = $post->getUser()->getFirstname().' '.$post->getUser()->getLastName().' ';
 
                     if (!empty($post->getUser()->getUsername())) {
-                        $username .= '(' . $post->getUser()->getUsername() . ')';
+                        $username .= '('.$post->getUser()->getUsername().')';
                     }
                 }
 
