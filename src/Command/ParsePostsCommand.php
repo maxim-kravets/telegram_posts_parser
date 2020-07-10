@@ -20,6 +20,7 @@ use danog\MadelineProto\RPCErrorException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -50,13 +51,38 @@ class ParsePostsCommand extends Command
 
     protected function configure()
     {
-        $this->setDescription('Allows you to parse chat posts.');
+        $this
+            ->setDescription('Allows you to parse chat posts.')
+            ->addOption(
+            'chat',
+            null,
+            InputOption::VALUE_OPTIONAL,
+            'Telegram chat link',
+            null
+            )
+            ->addOption(
+                'key',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'The word that must be present in the post',
+                null
+            )
+            ->addOption(
+                'depth',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'The number of recent days during which posts could be published'
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         $this->telegramService->async(true);
+
+        $chat = $input->getOption('chat');
+        $key = $input->getOption('key');
+        $days = $input->getOption('depth');
 
         $this->telegramService->loop(function () use ($io) {
             if (!yield $this->telegramService->getSelf()) {
@@ -68,42 +94,64 @@ class ParsePostsCommand extends Command
             }
         });
 
-        do {
-            $chat = trim((string) $io->ask('Enter chat: '));
+        if (empty($chat)) {
+            do {
+                $chat = trim((string)$io->ask('Enter chat: '));
 
-            $chat_info = [];
-            $is_chat_exists = true;
-            if (empty($chat)) {
-                $io->error('Chat can\'t be empty!');
-            } else {
-                $this->telegramService->loop(function () use ($chat, $io, &$is_chat_exists, &$chat_info) {
-                    try {
-                        $chat_info = yield $this->telegramService->getInfo($chat);
-                    } catch (\Exception $e) {
-                        $io->error('There is no such chat!');
-                        $is_chat_exists = false;
-                    }
-                });
-            }
-        } while (empty($chat) || !$is_chat_exists);
+                $chat_info = [];
+                $is_chat_exists = true;
+                if (empty($chat)) {
+                    $io->error('Chat can\'t be empty!');
+                } else {
+                    $this->telegramService->loop(function () use ($chat, $io, &$is_chat_exists, &$chat_info) {
+                        try {
+                            $chat_info = yield $this->telegramService->getInfo($chat);
+                        } catch (\Exception $e) {
+                            $io->error('There is no such chat!');
+                            $is_chat_exists = false;
+                        }
+                    });
+                }
+            } while (empty($chat) || !$is_chat_exists);
+        } else {
+            $this->telegramService->loop(function () use ($chat, $io, &$is_chat_exists, &$chat_info) {
+                try {
+                    $chat_info = yield $this->telegramService->getInfo($chat);
+                } catch (\Exception $e) {
+                    $io->error('There is no such chat!');
+                    die();
+                }
+            });
+        }
 
-        do {
-            $key = trim((string) $io->ask('Enter key: '));
+        if (empty($key)) {
+            do {
+                $key = trim((string)$io->ask('Enter key: '));
 
-            if (empty($key)) {
-                $io->error('Key can\'t be empty!');
-            }
-        } while (empty($key));
+                if (empty($key)) {
+                    $io->error('Key can\'t be empty!');
+                }
+            } while (empty($key));
+        }
 
-        do {
-            $days = $io->ask('Enter depth(days): ');
+        if (empty($days)) {
+            do {
+                $days = $io->ask('Enter depth(days): ');
 
+                $is_int = preg_match('/^[0-9]+$/', $days);
+
+                if (!$is_int) {
+                    $io->error('Depth can\'t be empty and must contain only numbers!');
+                }
+            } while (!$is_int);
+        } else {
             $is_int = preg_match('/^[0-9]+$/', $days);
 
             if (!$is_int) {
                 $io->error('Depth can\'t be empty and must contain only numbers!');
+                die();
             }
-        } while (!$is_int);
+        }
 
         try {
             $date = new \DateTime(date('Y/m/d'));
